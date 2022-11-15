@@ -1,0 +1,73 @@
+using log4net.Core;
+using log4net.Layout;
+using log4net.Util;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace BillPrep.Helpers.Log4Net
+{
+    [Serializable]
+    public class AuditLogInfo
+    {
+
+        public string UserName { get; set; }
+        public string ActionName { get; set; }
+        public string Type { get; set; }
+        public DateTime DateCreated { get; set; }
+        public String Details { get; set; }
+
+
+        public override string ToString()
+        {
+            return JsonConvert.SerializeObject(this);
+        }
+    }
+
+    public class LayoutPattern : PatternLayout
+    {
+        public LayoutPattern()
+        {
+            AddConverter(new ConverterInfo
+            {
+                Name = "AuditLogInfo",
+                Type = typeof(InfoConverter)
+            });
+        }
+    }
+
+    public class InfoConverter : PatternConverter
+    {
+        protected override void Convert(System.IO.TextWriter writer, object state)
+        {
+            if (state == null)
+            {
+                writer.Write(SystemInfo.NullText);
+                return;
+            }
+
+            var loggingEvent = state as LoggingEvent;
+            var actionInfo = loggingEvent.MessageObject as AuditLogInfo;
+
+            if (actionInfo == null)
+            {
+                writer.Write(SystemInfo.NullText);
+            }
+            else
+            {
+                switch (this.Option.ToLower())
+                {
+                    case "username": writer.Write(actionInfo.UserName); break;
+                    case "actionname": writer.Write(actionInfo.ActionName); break;
+                    case "type": writer.Write(actionInfo.Type); break;
+                    case "details": writer.Write(actionInfo.Details); break;
+                    case "datecreated": writer.Write(actionInfo.DateCreated); break;
+                    default: writer.Write(SystemInfo.NullText); break;
+                }
+            }
+        }
+    }
+}

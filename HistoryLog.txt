@@ -1,0 +1,82 @@
+using BillPrep.Data.ViewModels;
+using log4net.Core;
+using log4net.Layout;
+using log4net.Util;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace BillPrep.Helpers.Log4Net
+{
+    [Serializable]
+    public class HistoryLogInfo
+    {
+
+        public string UserName { get; set; }
+        public string Type { get; set; }
+        public string TypeId { get; set; }
+        public string ColumnName { get; set; }
+        public string PreviousValue { get; set; }
+        public string Value { get; set; }
+        public string UserId { get; set; }
+        public string Action { get; set; }
+        public string TenantID { get; set; }
+
+        public override string ToString()
+        {
+            return JsonConvert.SerializeObject(this);
+        }
+    }
+
+    public class HistoryLayoutPattern : PatternLayout
+    {
+        public HistoryLayoutPattern()
+        {
+            AddConverter(new ConverterInfo
+            {
+                Name = "HistoryLogInfo",
+                Type = typeof(HistoryInfoConverter)
+            });
+        }
+    }
+
+    public class HistoryInfoConverter : PatternConverter
+    {
+        protected override void Convert(System.IO.TextWriter writer, object state)
+        {
+            if (state == null)
+            {
+                writer.Write(SystemInfo.NullText);
+                return;
+            }
+
+            var loggingEvent = state as LoggingEvent;
+            var actionInfo = loggingEvent.MessageObject as HistoryLogInfo;
+
+            if (actionInfo == null)
+            {
+                writer.Write(SystemInfo.NullText);
+            }
+            else
+            {
+                switch (this.Option.ToLower())
+                {
+                    case "username": writer.Write(actionInfo.UserName); break;
+                    case "type": writer.Write(actionInfo.Type); break;
+                    case "typeid": writer.Write(actionInfo.TypeId); break;
+                    case "columnname": writer.Write(actionInfo.ColumnName); break;
+                    case "previousvalue": writer.Write(actionInfo.PreviousValue); break;
+                    case "value": writer.Write(actionInfo.Value); break;
+                    case "userid": writer.Write(actionInfo.UserId); break;
+                    case "action": writer.Write(actionInfo.Action); break;
+                    //case "createddate": writer.Write(actionInfo.CreatedDate); break;
+                    case "tenantid": writer.Write(actionInfo.TenantID); break;
+                    default: writer.Write(SystemInfo.NullText); break;
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,145 @@
+<log4net>
+    <root>
+      <level value="ALL"/>    
+      <appender-ref ref="BillPrepAudit"/>
+      <appender-ref ref="BillPrepHistory"/>
+    </root>    
+    <logger additivity="false" name="BillPrepAudit">
+      <level value="ALL"/>
+      <appender-ref ref="BillPrepAudit"/>
+    </logger>
+    <logger additivity="false" name="BillPrepHistory">
+      <level value="ALL"/>
+      <appender-ref ref="BillPrepHistory"/>
+    </logger>    
+    <appender name="BillPrepAudit" type="BillPrep.Helpers.Log4Net.AsynchronousAdoNetAppender">
+      <bufferSize value="1"/>
+      <connectionType value="System.Data.SqlClient.SqlConnection,System.Data, Version=1.0.3300.0, Culture=neutral,PublicKeyToken=b77a5c561934e089"/>
+      <connectionString value="Dynamic"/>
+      <commandText value="INSERT INTO [dbo].[AuditLogs] (UserName,ActionName,Type,DateCreated,Details)  VALUES (@UserName,@ActionName,@Type,@DateCreated,@Details)"/>
+      <!--<parameter>
+        <parameterName value="@MainID" />
+        <dbType value="Int64" />
+        <size value="64" />
+        <layout type="BillPrep.Helpers.Log4Net.LayoutPattern">
+          <conversionPattern value="%VerifyAuditInfo{MainID}" />
+        </layout>
+      </parameter>-->
+      <parameter>
+        <parameterName value="@UserName"/>
+        <dbType value="String"/>
+        <size value="100"/>
+        <layout type="BillPrep.Helpers.Log4Net.LayoutPattern">
+          <conversionPattern value="%AuditLogInfo{UserName}"/>
+        </layout>
+      </parameter>
+      <parameter>
+        <parameterName value="@ActionName"/>
+        <dbType value="String"/>
+        <size value="500"/>
+        <layout type="BillPrep.Helpers.Log4Net.LayoutPattern">
+          <conversionPattern value="%AuditLogInfo{ActionName}"/>
+        </layout>
+      </parameter>
+      <parameter>
+        <parameterName value="@Details"/>
+        <dbType value="String"/>
+        <size value="4000"/>
+        <layout type="BillPrep.Helpers.Log4Net.LayoutPattern">
+          <conversionPattern value="%AuditLogInfo{Details}"/>
+        </layout>
+      </parameter>
+      <parameter>
+        <parameterName value="@DateCreated"/>
+        <dbType value="DateTime"/>
+        <layout type="BillPrep.Helpers.Log4Net.LayoutPattern">
+          <conversionPattern value="%AuditLogInfo{DateCreated}"/>
+        </layout>
+      </parameter>
+      <parameter>
+        <parameterName value="@Type"/>
+        <dbType value="string"/>
+        <size value="100"/>
+        <layout type="BillPrep.Helpers.Log4Net.LayoutPattern">
+          <conversionPattern value="%AuditLogInfo{Type}"/>
+        </layout>
+      </parameter>
+    </appender>
+    <appender name="BillPrepHistory" type="BillPrep.Helpers.Log4Net.HistoryAdoNetAppender">
+      <bufferSize value="1"/>
+      <connectionType value="System.Data.SqlClient.SqlConnection,System.Data, Version=1.0.3300.0, Culture=neutral,PublicKeyToken=b77a5c561934e089"/>
+      <connectionString value="Dynamic"/>
+      <commandText value="INSERT INTO [dbo].[Activities] (Type, TypeId, ColumnName, PreviousValue, Value, UserID, Action, TenantID)                      VALUES (@Type, @TypeId, @ColumnName, @PreviousValue, @Value, @UserID, @Action, @TenantID)"/>
+      <parameter>
+        <parameterName value="@Type"/>
+        <dbType value="String"/>
+        <size value="100"/>
+        <layout type="BillPrep.Helpers.Log4Net.HistoryLayoutPattern">
+          <conversionPattern value="%HistoryLogInfo{Type}"/>
+        </layout>
+      </parameter>
+      <parameter>
+        <parameterName value="@TypeId"/>
+        <dbType value="String"/>
+        <size value="100"/>
+        <layout type="BillPrep.Helpers.Log4Net.HistoryLayoutPattern">
+          <conversionPattern value="%HistoryLogInfo{TypeId}"/>
+        </layout>
+      </parameter>
+      <parameter>
+        <parameterName value="@ColumnName"/>
+        <dbType value="String"/>
+        <size value="100"/>
+        <layout type="BillPrep.Helpers.Log4Net.HistoryLayoutPattern">
+          <conversionPattern value="%HistoryLogInfo{ColumnName}"/>
+        </layout>
+      </parameter>
+      <parameter>
+        <parameterName value="@PreviousValue"/>
+        <dbType value="String"/>
+        <!--<size value="MAX" />-->
+        <layout type="BillPrep.Helpers.Log4Net.HistoryLayoutPattern">
+          <conversionPattern value="%HistoryLogInfo{PreviousValue}"/>
+        </layout>
+      </parameter>
+      <parameter>
+        <parameterName value="@Value"/>
+        <dbType value="String"/>
+        <!--<size value="MAX" />-->
+        <layout type="BillPrep.Helpers.Log4Net.HistoryLayoutPattern">
+          <conversionPattern value="%HistoryLogInfo{Value}"/>
+        </layout>
+      </parameter>
+      <parameter>
+        <parameterName value="@UserID"/>
+        <dbType value="String"/>
+        <size value="100"/>
+        <layout type="BillPrep.Helpers.Log4Net.HistoryLayoutPattern">
+          <conversionPattern value="%HistoryLogInfo{UserID}"/>
+        </layout>
+      </parameter>
+      <parameter>
+        <parameterName value="@TenantID"/>
+        <dbType value="String"/>
+        <size value="100"/>
+        <layout type="BillPrep.Helpers.Log4Net.HistoryLayoutPattern">
+          <conversionPattern value="%HistoryLogInfo{TenantID}"/>
+        </layout>
+      </parameter>
+      <parameter>
+        <parameterName value="@Action"/>
+        <dbType value="String"/>
+        <size value="100"/>
+        <layout type="BillPrep.Helpers.Log4Net.HistoryLayoutPattern">
+          <conversionPattern value="%HistoryLogInfo{Action}"/>
+        </layout>
+      </parameter>
+      <!--<parameter>
+        <parameterName value="@CreatedDate" />
+        <dbType value="DateTime" />
+        <layout type="BillPrep.Helpers.Log4Net.HistoryLayoutPattern">
+          <conversionPattern value="%HistoryLogInfo{CreatedDate}" />
+        </layout>
+      </parameter>-->
+    </appender>
+  </log4net>

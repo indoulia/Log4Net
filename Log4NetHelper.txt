@@ -1,0 +1,91 @@
+using BillPrep.Data.ViewModels;
+using log4net;
+using log4net.Appender;
+using log4net.Repository;
+using log4net.Repository.Hierarchy;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Linq;
+using System.Web;
+
+namespace BillPrep.Helpers.Log4Net
+{
+    public static class Log4NetHelper
+    {
+        public static void Log(AuditLogInfo message)
+        {
+            var objLogger = GetLogger("BillPrepAudit", "BillPrepAudit");
+
+            objLogger.Info( message);
+        }
+
+        public static void Log(HistoryLogInfo message)
+        {
+            var objLogger = GetLogger("BillPrepHistory", "BillPrepHistory");
+            message.PreviousValue = string.IsNullOrEmpty(message.PreviousValue) ? "" : message.PreviousValue;
+            message.Value = string.IsNullOrEmpty(message.Value) ? "" : message.Value;
+            if ((message.PreviousValue.TrimEnd('0') != message.Value.TrimEnd('0')) || (message.PreviousValue == "" && message.Value == ""))
+                objLogger.Info(message);
+        }
+
+        public static void Log(List<HistoryLogInfo> messages)
+        {
+            var objLogger = GetLogger("BillPrepHistory", "BillPrepHistory");
+            foreach (var message in messages)
+            {
+                message.PreviousValue = string.IsNullOrEmpty(message.PreviousValue) ? "" : message.PreviousValue;
+                message.Value = string.IsNullOrEmpty(message.Value) ? "" : message.Value;
+                if ((message.PreviousValue.TrimEnd('0') != message.Value.TrimEnd('0')) || (message.PreviousValue == "" && message.Value == ""))
+                    objLogger.Info(message);
+            }
+        }
+
+
+
+        #region Public Methods
+        public static ILog GetLogger(string repositoryName, string name)
+        {
+            //It will create a repository for each different arg it will receive
+
+            ILoggerRepository repository = null;
+
+            var repositories = LogManager.GetAllRepositories();
+            foreach (var loggerRepository in repositories)
+            {
+                if (loggerRepository.Name.Equals(repositoryName))
+                {
+                    repository = loggerRepository;
+                    log4net.Config.XmlConfigurator.Configure(repository);
+                    break;
+                }
+            }
+
+            //Hierarchy hierarchy = null;
+            if (repository == null)
+            {
+                //Create a new repository
+                repository = LogManager.CreateRepository(repositoryName);                
+                log4net.Config.XmlConfigurator.Configure(repository);
+            }
+            //SetAdoNetAppenderConnectionStrings(repositoryName);
+            //Returns a logger from a particular repository;
+            //Logger with same name but different repository will log using different appenders
+            return LogManager.GetLogger(repositoryName, name);
+        }
+        #endregion
+        public static void SetAdoNetAppenderConnectionStrings(string repositoryName)
+        {
+            var hier = LogManager.GetRepository(repositoryName);
+            if (hier != null)
+            {
+                var appenders = hier.GetAppenders().OfType<AdoNetAppender>();
+                foreach (var appender in appenders)
+                {
+                    appender.ConnectionString = ConfigurationManager.ConnectionStrings["Log4NetConnection"].ToString();
+                    appender.ActivateOptions();
+                }
+            }
+        }
+    }
+}
